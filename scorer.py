@@ -1,6 +1,12 @@
+"""
+This python module is a Streamlit-based application that evaluates resumes against job descriptions using 
+Google Gemini AI. It supports uploading PDF and DOCX files, extracting text, scoring candidates across multiple 
+criteria, and displaying results in an interactive interface. Shortlisted candidates can be downloaded 
+or scheduled for further steps through an integrated scheduling module.
+"""
+
 import os
 import streamlit as st
-from PIL import Image
 import PyPDF2
 import docx
 import google.generativeai as genai
@@ -11,72 +17,33 @@ import jobDescription, schedule
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=gemini_api_key)
 
-def convert_old_response_to_json(old_response):
-    prompt = f"""
-    Below is a resume evaluation written in text format. Your task is to convert it into structured JSON with the following format:
-    {{
-    "candidate_name": {{
-        "name": name of the candidate,
-        "reason": "N/A"
-    }},
-    "Skills": {{
-        "score": int (0–10),
-        "reason": "short explanation"
-    }},
-    "Project Domain": {{
-        "score": int (0–10),
-        "reason": "short explanation"
-    }},
-    "Experience": {{
-        "score": int (0–10),
-        "reason": "short explanation"
-    }},
-    "Location": {{
-        "score": int (0–10),
-        "reason": "short explanation"
-    }},
-    "Must to have": {{
-        "score": int (0–10),
-        "reason": "short explanation"
-    }},
-    "Good to have": {{
-        "score": int (0–10),
-        "reason": "short explanation"
-    }},
-    "Final Score": {{
-        "score": float (0.0–10.0),
-        "reason": "average explanation"
-    }},
-    "Mobile Number": {{
-        "Number": int(0-10),
-        "reason": "N/A"
-    }},
-    "Email Address": {{
-        "Email": "email address",
-        "reason": "N/A"
-    }}
-    }}
-
-    Evaluation Text:
-    {old_response}
-
-    Note: If any value is not found None assume it as 0 and reason as "N/A".
-    """
-
-    model = genai.GenerativeModel(model_name="gemini-1.5-flash")
-    response = model.generate_content(prompt)
-    return response.text
-
 
 def parse_gemini_json_response(response_text):
+    """
+    Extracts and parses JSON data from Gemini's raw response text.
+
+    Args:
+        response_text (str): Raw text response from Gemini.
+
+    Returns:
+        dict: Parsed JSON data or error message.
+    """
     try:
         json_text = re.search(r"\{.*\}", response_text, re.DOTALL).group()
         return json.loads(json_text)
     except Exception as e:
         return {"error": f"Failed to parse JSON: {e}"}
 
-
 def extract_text_from_pdf(file):
+    """
+    Extracts text content from a PDF file.
+
+    Args:
+        file (UploadedFile): PDF file uploaded via Streamlit.
+
+    Returns:
+        str: Extracted text from the PDF.
+    """
     pdf_reader = PyPDF2.PdfReader(file)  # Correct: Use PdfReader
     text = ""
 
@@ -87,30 +54,33 @@ def extract_text_from_pdf(file):
 
     return text
 
-
-# Function to extract text from DOCX
 def extract_text_from_docx(file):
+    """
+    Extracts text content from a DOCX file.
+
+    Args:
+        file (UploadedFile): DOCX file uploaded via Streamlit.
+
+    Returns:
+        str: Extracted text from the DOCX.
+    """
     doc = docx.Document(file)
     text = ""
     for para in doc.paragraphs:
         text += para.text
     return text
 
-def format_job_description(job_title):
-    if job_title in job_descriptions:
-        jd = job_descriptions[job_title]
-        formatted_jd = (
-            f"Job Title: {job_title}\n"
-            f"Required Skills: {', '.join(jd['skills'])}\n"
-            f"Preferred Project Domains: {', '.join(jd['ProjectDomain'])}\n"
-            f"Experience: {', '.join(jd['Experience'])}\n"
-            f"Location: {', '.join(jd['Location'])}\n"
-        )
-        return formatted_jd
-    else:
-        return f"Job Title: {job_title}\n(No specific details found.)"
-
 def evaluate_resume_to_json(resume_text, job_title):
+    """
+    Sends resume and job description to Gemini and returns structured JSON response.
+
+    Args:
+        resume_text (str): Extracted text content of the resume.
+        job_title (str): Selected job title for matching.
+
+    Returns:
+        str: Raw JSON-like text response from Gemini.
+    """
     jd = updated_jd.get(job_title)
 
     if not jd:
@@ -203,65 +173,16 @@ def evaluate_resume_to_json(resume_text, job_title):
     response = model.generate_content(prompt)
     return response.text
 
-
-def score_resume_with_gemini(resume_text, job_title):
-    jd = updated_jd.get(job_title)
-
-    if not jd:
-        return f"No structured job description found for '{job_title}'"
-
-    skills = ', '.join(jd.get('skills', []))
-    domains = ', '.join(jd.get('ProjectDomain', []))
-    experience = ', '.join(jd.get('Experience', []))
-    locations = ', '.join(jd.get('Location', []))
-    must_to_have = ', '.join(jd.get('Must to have', []))
-    good_to_have = ', '.join(jd.get('Good to have', []))
-
-    prompt = f"""
-        You are a hiring assistant. Evaluate the following resume for the role of '{job_title}'.
-
-        Resume:
-        {resume_text}
-
-        Candidate Name:
-        - {resume_text.splitlines()[0]}  # Assuming the first line of the resume contains the candidate's name if not find from resume.
-
-        Job Criteria:
-        - Required Skills: {skills}
-        - Preferred Project Domains: {domains}
-        - Experience Required: {experience}
-        - Preferred Locations: {locations}
-
-        Must to have skills: 
-        - {must_to_have}
-        Good to have skills:
-        - {good_to_have}
-
-        - Scoring format: 0-10 for each Job Criteria category, with a final score out of 10.
-        - Provide a short explanation for each score.
-        - Calculate the Job Criteria final score as an average of the each scores in Job Criteria category.
-        - Calculate the Must to have and Good to have scores separatel with a score out of 10.
-        - Provide a short explanation for each score from Must to have and Good to have.
-        - Divide Must to have and Good to have scores by 10 and add to Job Criteria final score to create final score.
-
-        Scoring format (example):
-        - Skills: 8/10 - matched most skills except Docker and PostgreSQL.
-        - Project Domain: 7/10 - worked in Education and Finance.
-        - Experience: 10/10 - matches exactly.
-        - Location: 5/10 - location not mentioned or mismatched.
-        - Must to have: 8/10 - matched most must to have skills.
-        - Good to have: 6/10 - matched some good to have skills.
-        - Final Score: 7.5/10
-
-        Other information:
-        - Find the mobile number and email address in the resume and return them as well.
-        """
-    model = genai.GenerativeModel(model_name='gemini-1.5-flash')
-    response = model.generate_content(prompt)
-    return response.text
-
 def upload_files(uploaded_files):
-    # Process and display uploaded resumes
+    """
+    Parses uploaded resumes and returns a list of filename-text tuples.
+
+    Args:
+        uploaded_files (list): List of UploadedFile objects.
+
+    Returns:
+        list: List of tuples (filename, resume text).
+    """
     resumes_texts = []
     if not uploaded_files:
         return
@@ -281,6 +202,16 @@ def upload_files(uploaded_files):
     return resumes_texts
 
 def display_results(results):
+    """
+    Displays results in a styled DataFrame and enables CSV download of shortlisted candidates.
+    It also return passed candidates as dataframe.
+
+    Args:
+        results (list): List of resume evaluation dictionary.
+
+    Returns:
+        pd.DataFrame: DataFrame of shortlisted candidates.
+    """
     df = pd.DataFrame(results)
     
     # Determine "Shortlisted" based on Cutoff Score
@@ -307,6 +238,17 @@ def display_results(results):
     return passed_df
 
 def score_resumes(analyze_disabled, resumes_texts, job_title):
+    """
+    Main scoring loop: sends resumes to Gemini and collects parsed scores.
+
+    Args:
+        analyze_disabled (bool): Whether the analyze button is disabled.
+        resumes_texts (list): List of (filename, text) tuples.
+        job_title (str): Selected job title.
+
+    Returns:
+        dict: dictionary of structured results according to resumes.
+    """
     results = []
     if st.button("📊 Analyze and Score Resumes", disabled=analyze_disabled):
         st.write(f"Analyzing resumes for job title: {job_title}...\n")
@@ -314,12 +256,6 @@ def score_resumes(analyze_disabled, resumes_texts, job_title):
         
             for resume_name, resume_text in resumes_texts:
                 st.markdown(f"### 📄 {resume_name}")
-
-                # # Step 1: Call Gemini with resume + job_title (returns free text evaluation)
-                # gemini_response = score_resume_with_gemini(resume_text, job_title)
-
-                # # Step 2: Convert free-form response to structured JSON
-                # json_response = convert_old_response_to_json(gemini_response)
 
                 json_response = evaluate_resume_to_json(resume_text, job_title)
 
@@ -420,10 +356,13 @@ def score_resumes(analyze_disabled, resumes_texts, job_title):
                     "Mobile Number": parsed["Mobile Number"]["Number"],
                     "Email Address": parsed["Email Address"]["Email"]
                 })
-
     return results
+
 def get_jd():
-    # Predefined job titles with relevant skills
+    """
+    Returns:
+        dict: Pre-defined job descriptions for different roles.
+    """
     job_descriptions = {
         "Python/Django": {
             "skills": ["Python", "Django", "Flask", "SQL", "PostgreSQL", "REST API"],
@@ -461,7 +400,8 @@ def get_jd():
 
     return job_descriptions
 
-# Streamlit UI
+
+################# -- Streamlit UI -- #################
 st.markdown(
     "<h3 style='padding: 8px; text-align: center; background-color: #EAF2F8; color: #1A5276;'>"
     "SmartHire</h3>",
@@ -482,17 +422,15 @@ job_descriptions = get_jd()
 # Call Job Description Editor
 jd_manager = jobDescription.JobDescriptionManager(job_descriptions)
 job_title = jd_manager.job_title
-
 updated_jd = jd_manager.JDEditor()
 
 # User input for cutoff score (float values allowed)
 cutoff_score = st.number_input("🎯 Enter Cutoff Score", min_value=0.0, max_value=10.0, value=6.0, step=0.1)
 
-
 results = score_resumes(analyze_disabled, resumes_texts, job_title)
 if results:
     passed_df = display_results(results)
-    
+
     # Check if 'passed_df' exists in session state, if not, initialize it
     if "passed_df" not in st.session_state:
         st.session_state["passed_df"] = passed_df
@@ -506,5 +444,6 @@ if "passed_df" in st.session_state and not st.session_state["passed_df"].empty:
     schedule_manager.handle_schedule()
 else:
     st.warning("⚠️ No passed candidates available for scheduling.")
-        
+
+
 
