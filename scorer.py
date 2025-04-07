@@ -76,8 +76,6 @@ def parse_gemini_json_response(response_text):
         return {"error": f"Failed to parse JSON: {e}"}
 
 
-
-
 def extract_text_from_pdf(file):
     pdf_reader = PyPDF2.PdfReader(file)  # Correct: Use PdfReader
     text = ""
@@ -111,6 +109,100 @@ def format_job_description(job_title):
         return formatted_jd
     else:
         return f"Job Title: {job_title}\n(No specific details found.)"
+
+def evaluate_resume_to_json(resume_text, job_title):
+    jd = updated_jd.get(job_title)
+
+    if not jd:
+        return {
+            "error": f"No structured job description found for '{job_title}'"
+        }
+
+    skills = ', '.join(jd.get('skills', []))
+    domains = ', '.join(jd.get('ProjectDomain', []))
+    experience = ', '.join(jd.get('Experience', []))
+    locations = ', '.join(jd.get('Location', []))
+    must_to_have = ', '.join(jd.get('Must to have', []))
+    good_to_have = ', '.join(jd.get('Good to have', []))
+    candidate_name = resume_text.splitlines()[0]  # Basic assumption
+
+    prompt = f"""
+    You are a smart hiring assistant. Evaluate the following resume for the job title '{job_title}' and respond in a strict JSON format.
+
+    Resume:
+    {resume_text}
+
+    Job Criteria:
+    - Required Skills: {skills}
+    - Preferred Project Domains: {domains}
+    - Experience Required: {experience}
+    - Preferred Locations: {locations}
+
+    Must to have skills:
+    - Must to have: {must_to_have}
+
+    Good to have skills:
+    - Good to have: {good_to_have}
+
+    NOTE:
+    - Calculate the Must to have and Good to have scores separately with a score out of 10.
+    - Divide Must to have and Good to have scores by 10 and add to Job Criteria final score to create final score.
+
+    Use this JSON format exactly:
+
+    {{
+    "candidate_name": {{
+        "name": "{candidate_name}",
+        "reason": "N/A"
+    }},
+    "Skills": {{
+        "score": int (0–10),
+        "reason": "short explanation"
+    }},
+    "Project Domain": {{
+        "score": int (0–10),
+        "reason": "short explanation"
+    }},
+    "Experience": {{
+        "score": int (0–10),
+        "reason": "short explanation"
+    }},
+    "Location": {{
+        "score": int (0–10),
+        "reason": "short explanation"
+    }},
+    "Must to have": {{
+        "score": int (0–10),
+        "reason": "short explanation"
+    }},
+    "Good to have": {{
+        "score": int (0–10),
+        "reason": "short explanation"
+    }},
+    "Final Score": {{
+        "score": float (0.0–10.0),
+        "reason": "average explanation"
+    }},
+    "Mobile Number": {{
+        "Number": "extracted number or null",
+        "reason": "N/A"
+    }},
+    "Email Address": {{
+        "Email": "extracted email or null",
+        "reason": "N/A"
+    }}
+    }}
+
+    Notes:
+    - Do not explain outside the JSON.
+    - If any value is missing, assume it as 0 or "N/A".
+    - Return only the JSON. No prose explanation.
+    """
+
+    model = genai.GenerativeModel(model_name='gemini-1.5-flash')
+    response = model.generate_content(prompt)
+    return response.text
+
 
 def score_resume_with_gemini(resume_text, job_title):
     jd = updated_jd.get(job_title)
@@ -223,18 +315,20 @@ def score_resumes(analyze_disabled, resumes_texts, job_title):
             for resume_name, resume_text in resumes_texts:
                 st.markdown(f"### 📄 {resume_name}")
 
-                # Step 1: Call Gemini with resume + job_title (returns free text evaluation)
-                gemini_response = score_resume_with_gemini(resume_text, job_title)
+                # # Step 1: Call Gemini with resume + job_title (returns free text evaluation)
+                # gemini_response = score_resume_with_gemini(resume_text, job_title)
 
-                # Step 2: Convert free-form response to structured JSON
-                json_response = convert_old_response_to_json(gemini_response)
+                # # Step 2: Convert free-form response to structured JSON
+                # json_response = convert_old_response_to_json(gemini_response)
+
+                json_response = evaluate_resume_to_json(resume_text, job_title)
 
                 # Step 3: Parse the JSON string
                 parsed = parse_gemini_json_response(json_response)
 
                 if "error" in parsed:
                     st.error(f"❌ {parsed['error']}")
-                    st.code(gemini_response, language="text")
+                    # st.code(gemini_response, language="text")
                     continue
 
                 # Step 4: Display scores + reasons in 7 columns

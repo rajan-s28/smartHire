@@ -15,7 +15,6 @@ from gtts import gTTS
 # available_models = tts.list_models()
 # print(available_models)
 api_openai= os.getenv("OPENAI_API_KEY")
-print("API Key:", api_openai)
 
 # Setup LLM
 llm = OpenAI(api_token=api_openai)
@@ -97,8 +96,6 @@ class PassedCandidatesManager:
         st.dataframe(orignal_df)
 
         select_all = st.checkbox('Schedule for all candidates')
-        schedule_prompt = st.text_input("Ask Gemini")
-        filter_button = st.button("Filter With Gemini🧠")
 
         # ✅ Initialize session state safely
         if "filtered_df" not in st.session_state:
@@ -108,8 +105,10 @@ class PassedCandidatesManager:
         
         if not select_all:
             # Filter button below prompt
+            schedule_prompt = st.text_input("Ask Gemini")
+            filter_button = st.button("Filter With Gemini🧠")
+            
             if filter_button and schedule_prompt:
-
                 st.session_state.filtered_df = self.filter_dataframe_with_prompt(self._passed_df, schedule_prompt)
                 st.session_state.filtered = True
                 st.dataframe(st.session_state.filtered_df)
@@ -208,8 +207,15 @@ class PassedCandidatesManager:
             if isinstance(result, list):
                 return pd.DataFrame(result, columns=["Mobile Number"])
 
-            st.warning("🤔 Couldn't interpret the LLM output as a table. Returning original DataFrame.")
-            return df
+            columns_needed = ["Candidate Name", "Mobile Number", "Email Address"]
+            existing_columns = [col for col in columns_needed if col in df.columns]
+            if existing_columns:
+                sliced_df = df[existing_columns].reset_index(drop=True)
+                sliced_df.index = sliced_df.index + 1
+                return sliced_df
+            else:
+                st.warning("⚠️ Required columns not found in original DataFrame. Returning full DataFrame.")
+                return df
 
         except Exception as e:
             st.error(f"⚠️ PandasAI returned an error: {e}")
