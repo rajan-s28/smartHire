@@ -793,3 +793,151 @@ print(result['value'])
 
 [1 rows x 19 columns]}
 2025-04-07 15:14:26 [INFO] Executing Step 8: ResultParsing
+2025-04-07 18:10:56 [INFO] Question: Filter Candidates with Final Score more than 7.0
+2025-04-07 18:10:56 [INFO] Running PandasAI with openai LLM...
+2025-04-07 18:10:56 [INFO] Prompt ID: 58934d71-dcb3-4d21-9d54-0b0cb465b7ef
+2025-04-07 18:10:56 [INFO] Executing Pipeline: GenerateChatPipeline
+2025-04-07 18:10:56 [INFO] Executing Step 0: ValidatePipelineInput
+2025-04-07 18:10:56 [INFO] Executing Step 1: CacheLookup
+2025-04-07 18:10:56 [INFO] Using cached response
+2025-04-07 18:10:56 [INFO] Executing Step 2: PromptGeneration
+2025-04-07 18:10:56 [INFO] Executing Step 2: Skipping...
+2025-04-07 18:10:56 [INFO] Executing Step 3: CodeGenerator
+2025-04-07 18:10:56 [INFO] Executing Step 3: Skipping...
+2025-04-07 18:10:56 [INFO] Executing Step 4: CachePopulation
+2025-04-07 18:10:56 [INFO] Executing Step 4: Skipping...
+2025-04-07 18:10:56 [INFO] Executing Step 5: CodeCleaning
+2025-04-07 18:10:56 [INFO] 
+Code running:
+```
+data = {'Candidate Name': ['Saurabh Wabale', 'Rajan Singh', 'SOPHIA BROWN'], 'Resume': ['Abhi_Saha_Resume.pdf', 'Sophia_Brown-python-developer.pdf', 'Rajan_Singh-python-developer-pune.pdf'], 'Skills': [8, 7, 8], 'Skills_Reason': ['Proficient in Python, Django, Flask, SQL, PostgreSQL.  Missing explicit mention of REST API but demonstrated through projects.', 'Proficient in Python and Django.  Lacks SQL, PostgreSQL, Flask, and REST API experience.', 'Possesses all required skills (Python, Django, Flask, SQL, PostgreSQL, REST API).'], 'Project Domain': [2, 2, 0], 'ProjectDomain_Reason': ['No project domain experience mentioned.', 'Project domain not specified.', "Projects don't clearly fall into preferred domains.  Some aspects could be relevant (e.g., data pipeline could apply to various domains)."], 'Experience': [9, 0, 2], 'Experience_Reason': ['Experience duration not specified.', '4 years of experience aligns well with the requirement of 3-5 years.', 'Only a short internship.  Significantly less than the 3-5 years required.'], 'Location': [0, 10, 10], 'Location_Reason': ['Candidate is located in Los Angeles, not Pune.', 'Candidate is located in Pune, matching the preferred location.', 'Candidate is located in East Siang, not Pune.'], 'Must to have': [8, 9, 10], 'Must to have_reason': ['Strong proficiency in Basic Python and Django is evident.', 'Strong proficiency in Python and Django is evident from resume and projects.', 'Demonstrates proficiency in Basic Python and Django.'], 'Good to have': [1, 4, 6], 'Good to have_reason': ['Possesses Docker and AWS, but lacks Kubernetes, PyQt, Streamlit, and Machine Learning.', 'No mention of Docker, AWS, Kubernetes, PyQt, streamlit, or Machine Learning.', 'No experience with Docker, AWS, Kubernetes, PyQt, streamlit, or Machine Learning.'], 'Final Score': [7.55, 6.5, 2.6], 'FinalScore_Reason': ['Average of Skills (8), Project Domain (0), Experience (0), Location (10), Must to have (10)/10 and Good to have (4)/10 scores.', 'Average of weighted scores for skills, project domain, experience, location, must-have and good-to-have skills.', '(7+0+8+0+9/10 + 1/10)/5'], 'Mobile Number': ['+91-9340403301', '7513791623', '9737736483'], 'Email Address': ['y6urzxqwt-qa@aol.com', 'ejd8g9s5ywi@yahoo.com', 'so40_8vgk@aol.com'], 'Shortlisted': ['Yes', 'Yes', 'Yes']}
+filtered_candidates = dfs[0][dfs[0]['Final Score'] > 7.0]
+result = {'type': 'dataframe', 'value': filtered_candidates}
+print(result)
+        ```
+2025-04-07 18:10:56 [INFO] Executing Step 6: CodeExecution
+2025-04-07 18:10:56 [INFO] Executing Step 7: ResultValidation
+2025-04-07 18:10:56 [INFO] Answer: {'type': 'dataframe', 'value':   Candidate Name                                 Resume  Skills  ...   Mobile Number                Email Address Shortlisted
+1    Rajan Singh  Rajan_Singh-python-developer-pune.pdf       8  ...  +91-9340403301  thakurrajanpratap@gmail.com         Yes
+
+[1 rows x 19 columns]}
+2025-04-07 18:10:56 [INFO] Executing Step 8: ResultParsing
+2025-04-07 18:11:07 [INFO] Question: Filter Candidates with Final Score more than 6.0
+2025-04-07 18:11:07 [INFO] Running PandasAI with openai LLM...
+2025-04-07 18:11:07 [INFO] Prompt ID: d3925728-f2c5-4c2b-9447-d577f4e4fa78
+2025-04-07 18:11:07 [INFO] Executing Pipeline: GenerateChatPipeline
+2025-04-07 18:11:07 [INFO] Executing Step 0: ValidatePipelineInput
+2025-04-07 18:11:07 [INFO] Executing Step 1: CacheLookup
+2025-04-07 18:11:07 [INFO] Executing Step 2: PromptGeneration
+2025-04-07 18:11:07 [INFO] Using prompt: <dataframe>
+dfs[0]:3x19
+Candidate Name,Resume,Skills,Skills_Reason,Project Domain,ProjectDomain_Reason,Experience,Experience_Reason,Location,Location_Reason,Must to have,Must to have_reason,Good to have,Good to have_reason,Final Score,FinalScore_Reason,Mobile Number,Email Address,Shortlisted
+Saurabh Wabale,Saurabh_Wabale_Python_developer_Resume.pdf,8,"Proficient in Python, Django, Flask, PostgreSQL, and REST APIs. Missing SQL explicitly but demonstrated through database experience.",0,Project domain is not specified.,0,Experience duration is not specified.,10,Candidate is located in Pune.,10,Demonstrates proficiency in Basic Python and Django.,4,"Has Docker and AWS experience, missing Kubernetes, PyQt, streamlit, and Machine Learning.",6.2,Average of skill scores (8+0+0+10+10+4)/6 = 6.2. ,4372341626,4othw-j9bo3@outlook.com,Yes
+SOPHIA BROWN,Sophia_Brown-python-developer.pdf,7,"Proficient in Python, Django, and Flask.  Missing SQL and PostgreSQL explicitly mentioned. REST API development experience is present.",0,No specific project domains mentioned in the resume.,8,5 years of experience aligns with the requirement.,0,"Resume lists Los Angeles, not Pune.",9,Strong proficiency in Basic Python and Django is evident.,1,"No mention of Docker, AWS, Kubernetes, PyQt, streamlit, or Machine Learning.",5.8,"Average of Skill (7), Project Domain (0), Experience (8), Location (0), Must have (9/10), and Good to have (1/10).",8773650969,ov0kalxj2@zoho.com,Yes
+Rajan Singh,Rajan_Singh-python-developer-pune.pdf,8,"Proficient in Python, Django, Flask, SQL, PostgreSQL.  Missing explicit mention of REST API but projects suggest familiarity.",2,Projects don't align with preferred domains.  Most are related to VFX and ML.,9,4 years of experience aligns well with the requirement of 3-5 years.,10,"Candidate is located in Pune, matching preferred location.",10,Demonstrates strong proficiency in basic Python and Django through projects and experience.,6,"Has experience with AWS, PyQt.  Docker, Kubernetes, streamlit, and more advanced ML experience are not explicitly mentioned.",7.3,"Average of weighted scores: Skills (8), Project Domain (2), Experience (9), Location (10), Must have (10/10 =1.0), Good to have (6/10=0.6).  (8+2+9+10+1.0+0.6)/6 = 7.3",+91-9340403301 4740053140,zq5s6srp@zoho.com,Yes
+</dataframe>
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: 
+type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+
+```
+
+
+
+### QUERY
+ Filter Candidates with Final Score more than 6.0
+
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+
+If you are asked to plot a chart, use "matplotlib" for charts, save as png.
+
+
+Generate python code and return full updated code:
+2025-04-07 18:11:07 [INFO] Executing Step 3: CodeGenerator
+2025-04-07 18:11:11 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-07 18:11:11 [INFO] Prompt used:
+            <dataframe>
+dfs[0]:3x19
+Candidate Name,Resume,Skills,Skills_Reason,Project Domain,ProjectDomain_Reason,Experience,Experience_Reason,Location,Location_Reason,Must to have,Must to have_reason,Good to have,Good to have_reason,Final Score,FinalScore_Reason,Mobile Number,Email Address,Shortlisted
+Saurabh Wabale,Saurabh_Wabale_Python_developer_Resume.pdf,8,"Proficient in Python, Django, Flask, PostgreSQL, and REST APIs. Missing SQL explicitly but demonstrated through database experience.",0,Project domain is not specified.,0,Experience duration is not specified.,10,Candidate is located in Pune.,10,Demonstrates proficiency in Basic Python and Django.,4,"Has Docker and AWS experience, missing Kubernetes, PyQt, streamlit, and Machine Learning.",6.2,Average of skill scores (8+0+0+10+10+4)/6 = 6.2. ,4372341626,4othw-j9bo3@outlook.com,Yes
+SOPHIA BROWN,Sophia_Brown-python-developer.pdf,7,"Proficient in Python, Django, and Flask.  Missing SQL and PostgreSQL explicitly mentioned. REST API development experience is present.",0,No specific project domains mentioned in the resume.,8,5 years of experience aligns with the requirement.,0,"Resume lists Los Angeles, not Pune.",9,Strong proficiency in Basic Python and Django is evident.,1,"No mention of Docker, AWS, Kubernetes, PyQt, streamlit, or Machine Learning.",5.8,"Average of Skill (7), Project Domain (0), Experience (8), Location (0), Must have (9/10), and Good to have (1/10).",8773650969,ov0kalxj2@zoho.com,Yes
+Rajan Singh,Rajan_Singh-python-developer-pune.pdf,8,"Proficient in Python, Django, Flask, SQL, PostgreSQL.  Missing explicit mention of REST API but projects suggest familiarity.",2,Projects don't align with preferred domains.  Most are related to VFX and ML.,9,4 years of experience aligns well with the requirement of 3-5 years.,10,"Candidate is located in Pune, matching preferred location.",10,Demonstrates strong proficiency in basic Python and Django through projects and experience.,6,"Has experience with AWS, PyQt.  Docker, Kubernetes, streamlit, and more advanced ML experience are not explicitly mentioned.",7.3,"Average of weighted scores: Skills (8), Project Domain (2), Experience (9), Location (10), Must have (10/10 =1.0), Good to have (6/10=0.6).  (8+2+9+10+1.0+0.6)/6 = 7.3",+91-9340403301 4740053140,zq5s6srp@zoho.com,Yes
+</dataframe>
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: 
+type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+
+```
+
+
+
+### QUERY
+ Filter Candidates with Final Score more than 6.0
+
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+
+If you are asked to plot a chart, use "matplotlib" for charts, save as png.
+
+
+Generate python code and return full updated code:
+            
+2025-04-07 18:11:11 [INFO] Code generated:
+            ```
+            # TODO: import the required dependencies
+import pandas as pd
+
+# Assuming dfs is already declared and contains the DataFrame
+# Filter Candidates with Final Score more than 6.0
+filtered_candidates = dfs[0][dfs[0]['Final Score'] > 6.0]
+
+# Declare result var: 
+result = {
+    "type": "dataframe",
+    "value": filtered_candidates
+}
+
+# If you want to see the output, you can print it (optional)
+print(result['value'])
+            ```
+            
+2025-04-07 18:11:11 [INFO] Executing Step 4: CachePopulation
+2025-04-07 18:11:11 [INFO] Executing Step 5: CodeCleaning
+2025-04-07 18:11:11 [INFO] 
+Code running:
+```
+filtered_candidates = dfs[0][dfs[0]['Final Score'] > 6.0]
+result = {'type': 'dataframe', 'value': filtered_candidates}
+print(result['value'])
+        ```
+2025-04-07 18:11:11 [INFO] Executing Step 6: CodeExecution
+2025-04-07 18:11:11 [INFO] Executing Step 7: ResultValidation
+2025-04-07 18:11:11 [INFO] Answer: {'type': 'dataframe', 'value':    Candidate Name                                      Resume  Skills  ...   Mobile Number                Email Address Shortlisted
+1     Rajan Singh       Rajan_Singh-python-developer-pune.pdf       8  ...  +91-9340403301  thakurrajanpratap@gmail.com         Yes
+2  Saurabh Wabale  Saurabh_Wabale_Python_developer_Resume.pdf       8  ...      9999999999   saurabhwabale165@gmail.com         Yes
+
+[2 rows x 19 columns]}
+2025-04-07 18:11:11 [INFO] Executing Step 8: ResultParsing

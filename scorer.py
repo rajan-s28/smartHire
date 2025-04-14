@@ -94,7 +94,14 @@ def evaluate_resume_to_json(resume_text, job_title):
     locations = ', '.join(jd.get('Location', []))
     must_to_have = ', '.join(jd.get('Must to have', []))
     good_to_have = ', '.join(jd.get('Good to have', []))
-    candidate_name = resume_text.splitlines()[0]  # Basic assumption
+    # Attempt to get candidate name from the first line, with fallback
+    lines = resume_text.splitlines() if resume_text else [] # Get lines or empty list if resume_text is None/empty
+    if lines and lines[0].strip(): # Check if list has lines AND first line is not just whitespace
+        candidate_name = lines[0].strip()
+    else:
+        # Provide a safe default if the first line is empty or resume_text is empty
+        candidate_name = "Unknown Candidate (Check Resume Content)"
+    # --- FIX ENDS HERE ---
 
     prompt = f"""
     You are a smart hiring assistant. Evaluate the following resume for the job title '{job_title}' and respond in a strict JSON format.
